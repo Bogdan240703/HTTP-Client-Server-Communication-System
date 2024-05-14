@@ -14,16 +14,20 @@ int main(int argc, char *argv[])
     char *message;
     char *response;
     int sockfd;
-    sockfd = open_connection("34.246.184.49", 8080, AF_INET, SOCK_STREAM, 0);
     char comanda[15];
     char nume_user[15];
     char parola[15];
+    char cookie[256];
+    char token[300];
     char **cookies = NULL;
     while (1)
     {
+
+        setvbuf(stdout, NULL, _IONBF, BUFSIZ);
         scanf("%s", comanda);
         if (strcmp(comanda, "register") == 0)
         {
+            sockfd = open_connection("34.246.184.49", 8080, AF_INET, SOCK_STREAM, 0);
             printf("username=");
             scanf("%s", nume_user);
             printf("password=");
@@ -39,19 +43,114 @@ int main(int argc, char *argv[])
             char *json_string = json_serialize_to_string(root_value);
 
             // Afisează șirul JSON
-            printf("Payload JSON: %s\n", json_string);
-            // message=compute_post_request("34.246.184.49","/api/v1/tema/auth/register","application/json",,2,NULL,0);
-            // send_to_server(sockfd,message);
-            printf("200 - OK");
+            // printf("Payload JSON: %s", json_string);
+            message = compute_post_request("34.246.184.49", "/api/v1/tema/auth/register", "application/json", json_string, 2, NULL, 0);
+            send_to_server(sockfd, message);
+            response = receive_from_server(sockfd);
+            if (response[9] == '2')
+                printf("200 - OK\n");
+            else
+            {
+                printf("ERROR: %s\n", response);
+            }
+            close_connection(sockfd);
         }
         if (strcmp(comanda, "login") == 0)
         {
-            printf("user=");
+            sockfd = open_connection("34.246.184.49", 8080, AF_INET, SOCK_STREAM, 0);
+            printf("username=");
             scanf("%s", nume_user);
             printf("password=");
             scanf("%s", parola);
+            JSON_Value *root_value = json_value_init_object();
+            JSON_Object *root_object = json_value_get_object(root_value);
+
+            // Adaugă câmpuri la obiectul JSON
+            json_object_set_string(root_object, "username", nume_user);
+            json_object_set_string(root_object, "password", parola);
+
+            // Serializare obiectului JSON într-un șir de caractere JSON
+            char *json_string = json_serialize_to_string(root_value);
+
+            // Afisează șirul JSON
+            message = compute_post_request("34.246.184.49", "/api/v1/tema/auth/login", "application/json", json_string, 2, NULL, 0);
+            send_to_server(sockfd, message);
+            response = receive_from_server(sockfd);
+            // printf("aici: %s", response);
+            int j = 0;
+            while (response[j] != '\0')
+            {
+                if (response[j] == 's')
+                {
+                    if (response[j + 1] == 'i')
+                        if (response[j + 2] == 'd')
+                        {
+                            break;
+                        }
+                }
+                j++;
+            }
+            char *aux = response + j;
+            aux += 4;
+            int i = 0;
+            while (aux[i] != ';')
+            {
+                cookie[i] = aux[i];
+                i++;
+            }
+            cookie[i] = '\0';
+            if (response[9] == '2')
+                printf("200 - OK\n");
+            else
+            {
+                printf("ERROR: %s\n", response);
+            }
+            close_connection(sockfd);
+        }
+        if (strcmp(comanda, "enter_library") == 0)
+        {
+            sockfd = open_connection("34.246.184.49", 8080, AF_INET, SOCK_STREAM, 0);
+            message = compute_get_request("34.246.184.49", "/api/v1/tema/library/access", NULL, cookie, NULL, 1);
+            // printf("%s", message);
+            send_to_server(sockfd, message);
+            response = receive_from_server(sockfd);
+            if (response[9] == '2')
+            {
+                printf("Utilizatorul are acces la biblioteca\n");
+                int j = 0;
+                while (response[j] != '{')
+                    j++;
+                j += 10;
+                int i = 0;
+                while (response[j] != '"')
+                {
+                    token[i++] = response[j];
+                    j++;
+                }
+                token[i] = '\0';
+            }
+            else
+            {
+                printf("ERROR: %s\n", response);
+            }
+            close_connection(sockfd);
+        }
+        if (strcmp(comanda, "get_books") == 0)
+        {
+            sockfd = open_connection("34.246.184.49", 8080, AF_INET, SOCK_STREAM, 0);
+            message = compute_get_request("34.246.184.49", "/api/v1/tema/library/books", NULL, NULL, token, 1);
+            // printf("%s", message);
+            send_to_server(sockfd, message);
+            response = receive_from_server(sockfd);
+            int i = 0;
+            while (response[i] != '[')
+            {
+                i++;
+            }
+            printf("%s\n", response + i);
+            close_connection(sockfd);
         }
     }
-    close_connection(sockfd);
+
     return 0;
 }
