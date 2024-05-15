@@ -22,7 +22,12 @@ char *compute_get_request(char *host, char *url, char *query_params,
     }
     else
     {
-        sprintf(line, "GET %s HTTP/1.1", url);
+        if (cookies_count == 0)
+        {
+            sprintf(line, "DELETE %s HTTP/1.1", url);
+        }
+        else
+            sprintf(line, "GET %s HTTP/1.1", url);
     }
 
     compute_message(message, line);
@@ -47,7 +52,7 @@ char *compute_get_request(char *host, char *url, char *query_params,
 }
 
 char *compute_post_request(char *host, char *url, char *content_type, char *body_data,
-                           int body_data_fields_count, char **cookies, int cookies_count)
+                           int body_data_fields_count, char *cookies, int cookies_count)
 {
     char *message = calloc(BUFLEN, sizeof(char));
     char *line = calloc(LINELEN, sizeof(char));
@@ -60,7 +65,11 @@ char *compute_post_request(char *host, char *url, char *content_type, char *body
     // Step 2: add the host
     sprintf(line, "Host: %s", host);
     compute_message(message, line);
-
+    if (cookies_count == 1)
+    { // de fapt e token
+        sprintf(line, "Authorization: Bearer %s", cookies);
+        compute_message(message, line);
+    }
     /* Step 3: add necessary headers (Content-Type and Content-Length are mandatory)
             in order to write Content-Length you must first compute the message size
     */
@@ -75,9 +84,7 @@ char *compute_post_request(char *host, char *url, char *content_type, char *body
     sprintf(line, "Content-Length: %d", content_length);
     compute_message(message, line);
     // Step 4 (optional): add cookies
-    if (cookies != NULL)
-    {
-    }
+
     // Step 5: add new line at end of header
     compute_message(message, "");
     // Step 6: add the actual payload data
