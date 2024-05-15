@@ -56,7 +56,6 @@ char *compute_post_request(char *host, char *url, char *content_type, char *body
 {
     char *message = calloc(BUFLEN, sizeof(char));
     char *line = calloc(LINELEN, sizeof(char));
-    char *body_data_buffer = calloc(LINELEN, sizeof(char));
 
     // Step 1: write the method name, URL and protocol type
     sprintf(line, "POST %s HTTP/1.1", url);

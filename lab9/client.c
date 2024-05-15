@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
     char parola[15];
     char cookie[256];
     char token[300];
-    char **cookies = NULL;
     while (1)
     {
 
@@ -48,10 +47,10 @@ int main(int argc, char *argv[])
             send_to_server(sockfd, message);
             response = receive_from_server(sockfd);
             if (response[9] == '2')
-                printf("200 - OK\n");
+                printf("SUCCES: User-ul a fost inrefistrat cu succes!\n");
             else
             {
-                printf("ERROR: %s\n", response);
+                printf("ERROR User-ul nu a fost inregistrat!:\n%s\n", response);
             }
             close_connection(sockfd);
         }
@@ -100,10 +99,10 @@ int main(int argc, char *argv[])
             }
             cookie[i] = '\0';
             if (response[9] == '2')
-                printf("200 - OK\n");
+                printf("SUCCES - login-ul a fost realizat!\n");
             else
             {
-                printf("ERROR: %s\n", response);
+                printf("ERROR Login-ul a esuat:\n%s\n", response);
             }
             close_connection(sockfd);
         }
@@ -116,7 +115,7 @@ int main(int argc, char *argv[])
             response = receive_from_server(sockfd);
             if (response[9] == '2')
             {
-                printf("Utilizatorul are acces la biblioteca\n");
+                printf("SUCCES ! Utilizatorul are acces la biblioteca!\n");
                 int j = 0;
                 while (response[j] != '{')
                     j++;
@@ -131,7 +130,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                printf("ERROR: %s\n", response);
+                printf("ERROR ! Accesara bibliotecii nu s-a putut realiza:\n%s\n", response);
             }
             close_connection(sockfd);
         }
@@ -139,16 +138,22 @@ int main(int argc, char *argv[])
         {
             sockfd = open_connection("34.246.184.49", 8080, AF_INET, SOCK_STREAM, 0);
             message = compute_get_request("34.246.184.49", "/api/v1/tema/library/books", NULL, NULL, token, 1);
-            // printf("%s", message);
             send_to_server(sockfd, message);
             response = receive_from_server(sockfd);
-            int i = 0;
-            while (response[i] != '[')
+            if (response[9] != '2')
             {
-                i++;
+                printf("ERROR ! Nu aveti acces la biblioteca!\n%s\n", response);
             }
-            printf("%s\n", response + i);
-            close_connection(sockfd);
+            else
+            {
+                int i = 0;
+                while (response[i] != '[')
+                {
+                    i++;
+                }
+                printf("%s\n", response + i);
+                close_connection(sockfd);
+            }
         }
         if (strcmp(comanda, "get_book") == 0)
         {
@@ -173,7 +178,7 @@ int main(int argc, char *argv[])
             }
             else
             {
-                printf("Cartea cu id=%s nu exista!\n", id);
+                printf("ERROR :Cartea cu id=%s nu exista sau nu aveti accesa la biblioteca:\n%s!\n", id, response);
             }
             close_connection(sockfd);
         }
@@ -198,6 +203,24 @@ int main(int argc, char *argv[])
             fgets(publicatie, sizeof(publicatie), stdin);
             printf("page_count=");
             scanf("%s", nr_pagini);
+            int j = 0, ok = 1;
+            while (nr_pagini[j])
+            {
+                if (nr_pagini[j] >= '0' && nr_pagini[j] <= '9')
+                {
+                    j++;
+                }
+                else
+                {
+                    ok = 0;
+                    break;
+                }
+            }
+            if (ok == 0)
+            {
+                printf("ERROR - Valoarea introdusa pentru nr_pagini nu reprezinta un numar !!\n");
+                continue;
+            }
             JSON_Value *root_value = json_value_init_object();
             JSON_Object *root_object = json_value_get_object(root_value);
 
@@ -219,11 +242,11 @@ int main(int argc, char *argv[])
             // printf("%s\n", response);
             if (response[9] == '2')
             {
-                printf("OK - Cartea a fost adaugata cu succes!\n");
+                printf("SUCCES - Cartea a fost adaugata cu succes!\n");
             }
             else
             {
-                printf("Eroare - Cartea nu a fost adaugata\n");
+                printf("ERROR - Informatiile despre carte nu respecta formatarea sau nu aveti acces la biblioteca:\n%s\n", response);
             }
             close_connection(sockfd);
         }
@@ -243,11 +266,11 @@ int main(int argc, char *argv[])
             // printf("raspuns: %s\n", response);
             if (response[9] == '2')
             {
-                printf("Cartea cu id=%s a fost stearsa cu succes!\n", id);
+                printf("SUCCES - Cartea cu id=%s a fost stearsa cu succes!\n", id);
             }
             else
             {
-                printf("Cartea cu id=%s nu exista!\n", id);
+                printf("ERROR - Cartea cu id=%s nu exista sau nu aveti acces la biblioteca!\n%s\n", id, response);
             }
             close_connection(sockfd);
         }
@@ -255,22 +278,21 @@ int main(int argc, char *argv[])
         {
             sockfd = open_connection("34.246.184.49", 8080, AF_INET, SOCK_STREAM, 0);
             message = compute_get_request("34.246.184.49", "/api/v1/tema/auth/logout", NULL, cookie, NULL, 1);
-            // printf("%s", message);
             send_to_server(sockfd, message);
             response = receive_from_server(sockfd);
             if (response[9] == '2')
             {
-                printf("Utilizatorul s-a delogat cu succes!\n");
+                printf("SUCCES - Utilizatorul s-a delogat cu succes!\n");
             }
             else
             {
-                printf("A aparut o eroare! Nu sunteti autentificat\n");
+                printf("ERROR - A aparut o eroare! Nu sunteti autentificat\n");
             }
             close_connection(sockfd);
         }
         if (strcmp(comanda, "exit") == 0)
         {
-            printf("Inchidere program!\n");
+            printf("SUCCES - Inchidere program!\n");
             break;
         }
     }
