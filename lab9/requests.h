@@ -1,13 +1,8 @@
 #ifndef _REQUESTS_
 #define _REQUESTS_
 
-// computes and returns a GET request string (query_params
-// and cookies can be set to NULL if not needed)
-char *compute_get_request(char *host, char *url, char *query_params,
-						  char *cookies, char *token, int cookies_count);
+char *creaza_mesag_get(char *host, char *url, char *cookie, char *token, int e_mesaj_tip_get);
 
-// computes and returns a POST request string (cookies can be NULL if not needed)
-char *compute_post_request(char *host, char *url, char *content_type, char *body_data,
-						   int body_data_fields_count, char *cookies, int cookies_count);
+char *creaza_mesaj_post(char *host, char *url, char *tip_payload, char *payload, char *cookie, int trebuie_autorizatie);
 
 #endif
