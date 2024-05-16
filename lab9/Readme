@@ -1,0 +1,35 @@
+    Tema 4 PCOM - Savu Bogdan 322 CB
+
+    In primul rand, mentionez ca am pornit, asa cum este sugerat si in enuntul temei, de la scheletul oferit in laboratorul 9,
+pentru a ma folosi deja de functiile oferite acolo, precum cele de interactiune cu serverul (send, recv), sau de deschidere ale
+conexiunii cu acesta, etc.
+    Asadar tema incepe prin pornirea clientului. In acesta am ales sa folosesc cateva variabile declarate global, pe care trebuie sa
+le folosesc constant in diverese functii auxiliare, astfel am decis ca este mai usor sa le fac globale, decat sa le trimit ca parametrii,constant, la fiecare apel de functie (de ex: cookieul, tokenul, numele/ parola userului). De asemenea, main-ul am decis sa il las cat mai liber, astfel ca in acesta am doar alocarile pentru variabilele mentionate mai devreme, iar apoi un while in care citesc comenzile venite de la 'stdin'. Astfel, pentru fiecare comanda primita apelez o alta functie care verifica tipul de comanda
+primita. In aceasta functie, intrucat stiu ca urmeaza trimiterea unei comenzi catre server, intai deschid conexiunea cu serverul,
+indiferent de tipul de comanda primita. Apoi verific prin if-uri si strcmp fiecare caz in parte de comanda, pentru a vedea ce comanda
+am primit. Ulterior functia apeleaza apoi cate o alta functie care rezolva punctual fix acea comanda. Am incercat astfel prin aceste
+functii sa modularizez pe cat posibil codul. Asadar, in aceste functii continui executarea efectiva a comenzii primite. Pentru comenzile care trebuie sa primeasca mai mult input, voi face afisarile si citirile asa cum este mentionat in enuntul temei, pana cand
+strang toate informatiile pentru acea comanda. Apoi cu aceste informatii apelez una din functiile care creaza mesajul http ce trebuie 
+trimis catre server(care au fost inspirate din laborator). Dupa aceea trimit stringul care reprezinta mesajul http catre server, si
+astept sa primesc raspunsul (mereu trebuie sa primesc un raspuns). In functie de ceea ce astept de la acea comanda, continui cu
+parsarea raspunsului primit de la server. In primul rand verific daca codul incepe cu 2 caz in care raspunsul spune ca request-ul a
+fost procesat de server cu succes. Daca a avut succes, la comenzile pentru care trebuie sa primesc si continut de la server, de exemplu: login, get books, enter_libray, get_book, parsez raspunsul acesta, pentru a extrage fie token-ul/cookie-ul primit, pe care
+le si salvez in variabile pentru a le putea folosi ulterior, fie continut propriu-zis cum ar fi detalii despre biblioteca, sau despre
+o carte anume, pe care il afisez. In schimb, daca codul este unul de eroare, atunci afisez un mesaj de eroare, insotit de raspusnul
+primit. Dupa aceea, la final inainte sa ies din functie inchid conexiunea cu serverul si ma reintorc in while, unde astept venirea
+urmatoarei comenzi. 
+    De asemenea, mentionez ca am utilizat biblioteca parson, care a fost sugerata in enuntul temei: https://github.com/kgabis/parson .
+Am ales folosirea acesteia pentru a imi fi mai usor sa formatez payload-ul ce trebuie trimis catre server sub forma de json la anumite
+comenzi, cum ar fi cele de login/register, sau add_book. Pentru acest lucru mi-am facut si o functie care primeste 2 vectori, unul de
+campuri si unul cu valori pentru acestea si un nr de valori pe care acestea le au, si le pune in obiectul json, unul cate unul, tot la
+fel pentru generalizare si modularizare a codului. Apoi aceasta functie serializeaza jsonul la un string si il intoarce pentru a putea
+fi folosit dupa aceea, si pus in continutul unei comenzi ce trebuie executata.
+    In main, atunci cand primesc 0 de la unctia ce interpreteaza comenzile inseamna ca am primit exit, asa ca dau break din while
+pentru a putea inchide programul in mod normal. Inainte de inchidere eliberez si memoria alocata la inceput.
+    De asemenea a mai ramas sa prezint si functiile care creaza mesajele ce vor fi trimise catre server. Acestea sunt 2, una care
+creaza mesaje POST si alta care creaza mesaje GET/DELETE. In ambele din ele m-am folosit de scheletul din lab pentru a construi linie
+cu linie mesajul cu sprintf si cu functia compute_message care concateneaza linia la mesaj si adauga dupa ea '\r\n'. Totusi aici am
+abordat la fel, aceeasi idee orientata asupra modularizarii. Am creat functii separate pentru fiecare informatie diferita ce trebuie,
+adaugata. Acestea primesc ca parametru si mesajul, pentru a pune si direct in mesaj rezultatul. Astfel in functiile principale doar
+apelez aceste functii, mai ales ca exista cateva linii precum cele de host, sau cele cu cookie-uri/toke-uri care apar atat in cererile
+GET cat si in cele POST.

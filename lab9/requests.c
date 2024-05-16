@@ -1,3 +1,4 @@
+// SAVU BOGDAN - 322 CB
 #include <stdlib.h> /* exit, atoi, malloc, free */
 #include <stdio.h>
 #include <unistd.h>     /* read, write, close */
@@ -25,7 +26,7 @@ void seteaza_tip_cerere_corespunzator(int tip_mesaj, char *line, char *url, char
     }
     compute_message(mesaj, line);
 }
-// Am facut functii pentru campurile care erau emreu setate atat in post cat si in get/delete
+// Am facut functii pentru campurile care erau setate atat in post cat si in get/delete
 void adauga_camp_autorizare(char *line, char *token, char *mesaj)
 {
     sprintf(line, "Authorization: Bearer %s", token);
@@ -34,6 +35,21 @@ void adauga_camp_autorizare(char *line, char *token, char *mesaj)
 void adauga_camp_host(char *line, char *host, char *mesaj)
 {
     sprintf(line, "Host: %s", host);
+    compute_message(mesaj, line);
+}
+void adauga_camp_cookie(char *line, char *cookie, char *mesaj)
+{
+    sprintf(line, "Cookie: connect.sid=%s", cookie);
+    compute_message(mesaj, line);
+}
+void adauga_camp_tip_payload(char *line, char *tip_payload, char *mesaj)
+{
+    sprintf(line, "Content-Type: %s", tip_payload);
+    compute_message(mesaj, line);
+}
+void adauga_camp_len_payload(char *line, char *payload, char *mesaj)
+{
+    sprintf(line, "Content-Length: %d", (int)strlen(payload));
     compute_message(mesaj, line);
 }
 char *creaza_mesag_get(char *host, char *url, char *cookie, char *token, int e_mesaj_tip_get)
@@ -49,8 +65,7 @@ char *creaza_mesag_get(char *host, char *url, char *cookie, char *token, int e_m
     if (cookie != NULL)
     {
         // formatez inapoi cookie-ul asa cum a venit
-        sprintf(line, "Cookie: connect.sid=%s", cookie);
-        compute_message(mesaj, line);
+        adauga_camp_cookie(line, cookie, mesaj);
     }
     if (token != NULL)
     {
@@ -79,11 +94,9 @@ char *creaza_mesaj_post(char *host, char *url, char *tip_payload, char *payload,
         adauga_camp_autorizare(line, cookie, mesaj);
     }
     // adaug tipul continutului
-    sprintf(line, "Content-Type: %s", tip_payload);
-    compute_message(mesaj, line);
+    adauga_camp_tip_payload(line, tip_payload, mesaj);
     // adauga si lungimea continutului
-    sprintf(line, "Content-Length: %d", (int)strlen(payload));
-    compute_message(mesaj, line);
+    adauga_camp_len_payload(line, payload, mesaj);
     // adaug linia de separare intre header si payload
     compute_message(mesaj, "");
     // si aici adaug si payload-ul
