@@ -1,4 +1,4 @@
-    Tema 4 PCOM - Savu Bogdan 322 CB
+    HTTP Client-Server Communication System
 
     In primul rand, mentionez ca am pornit, asa cum este sugerat si in enuntul temei, de la scheletul oferit in laboratorul 9,
 pentru a ma folosi deja de functiile oferite acolo, precum cele de interactiune cu serverul (send, recv), sau de deschidere ale
